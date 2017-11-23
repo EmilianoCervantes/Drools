@@ -1,0 +1,77 @@
+//created on: 25/08/2017
+package green
+
+declare Color
+	color: String @key
+end
+
+declare Region
+	region: String @key
+end
+
+declare NoContiguo
+	r1: Region @key
+	r2: Region @key
+end
+
+declare EspacioSolucion
+	r1: Region @key
+	c1: Color @key
+	r2: Region @key
+	c2: Color @key
+	r3: Region @key
+	c3: Color @key
+	r4: Region @key
+	c4: Color @key
+end
+
+rule "Soluciones"
+	when
+		$r1 : Region("A1";)
+		$c1 : Color()
+		$r2 : Region("A2";)
+		$c2 : Color()
+		(NoContiguo($r1, $r2) or eval($c1 != $c2))
+		$r3 : Region("A3";)
+		$c3 : Color()
+		(NoContiguo($r1, $r3) or eval($c1 != $c3))
+		(NoContiguo($r2, $r3) or eval($c2 != $c3))
+		$r4 : Region("A4";)
+		$c4 : Color()
+		(NoContiguo($r1, $r4) or eval($c1 != $c4))
+		(NoContiguo($r2, $r4) or eval($c2 != $c4))
+		(NoContiguo($r3, $r4) or eval($c4 != $c4))
+	then
+		insert(new EspacioSolucion($r1,$c1,$r2,$c2,$r3,$c3,$r4,$c4));
+end
+
+rule "imprime soluciones"
+	when
+		$s : EspacioSolucion()
+	then
+		System.out.println($s);
+end
+
+rule "Carga hechos iniciales"
+
+    when
+        //conditions
+    then
+        insert(new Color("green"));
+        insert(new Color("yellow"));
+        insert(new Color("red"));
+        insert(new Region("A1"));
+        Region a2 = new Region("A2");
+        insert(a2);
+        insert(new Region("A3"));
+        Region a4 = new Region("A4");
+        insert(a4);
+end
+
+rule "Your Second Rule"
+    //include attributes such as "salience" here...
+    when
+        //conditions
+    then
+        //actions
+end

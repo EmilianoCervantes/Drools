@@ -1,0 +1,126 @@
+//created on: 28/08/2017
+package com.sample
+
+declare Profesor
+	prof: String @key 
+end
+
+declare Materia
+	nombre: String @key
+end
+
+declare Dia
+	dia: String @key
+end
+
+declare Imparte
+	prof: Profesor @key
+	mat: Materia @key
+end
+
+declare Despues
+	mat1: Materia @key
+	mat2: Materia @key
+end
+
+declare NoDiaMateria
+	mat: Materia @key
+	dia: Dia @key
+end
+
+declare DiaMateria
+	mat: Materia @key
+	dia: Dia @key
+end
+
+declare NoDiaProfesor
+	profesor: Profesor @key
+	dia: Dia @key
+end
+
+rule "Carga de Hechos"
+    then
+    	Profesor p = new Profesor("Maria");
+    	insert(p);
+    	insert(new Profesor("Jesus"));
+    	Profesor F = new Profesor("Faraon");
+    	insert(F);
+        Materia lo = new Materia("Logica");
+        insert(lo);
+        Materia pr = new Materia("Programacion");
+        insert(pr);
+        insert(new Materia("Matematicas"));
+        Dia lu = new Dia("Lunes");
+        insert(lu);
+        insert(new Dia("Miercoles"));
+        insert(new Dia("Jueves"));
+        insert(new Imparte(p,pr));
+        insert(new NoDiaMateria(lo,lu));
+        insert(new NoDiaProfesor(F,lu));
+        insert(new Despues(lo,pr));
+        
+end
+
+rule "No Lunes"
+    when
+    	$m1: Materia(nombre == "Logica")
+    	$m2: Materia(nombre == "Programacion")
+    	$p: Profesor(prof == "Maria")
+    	$d: Dia(dia == "Lunes")
+    	$des: Despues(mat1 == $m1 && mat2 == $m2)
+    	//$no: NoDiaMateria()
+    then
+		//Como Progra es después de logica, sabemos que no es el lunes
+        insert(new NoDiaMateria($m2,$d));
+        //System.out.println($no);
+        insert(new NoDiaProfesor($p,$d));
+end
+
+rule "Lunes Mate"
+	when
+		$m1: Materia(nombre == "Logica")
+    	$m2: Materia(nombre == "Programacion")
+    	$m3: Materia(nombre == "Matematicas")
+    	$p: Profesor(prof == "Jesus")
+    	$d1: Dia(dia == "Lunes")
+    	(NoDiaMateria(mat == $m1,dia == $d1) && NoDiaMateria(mat == $m2,dia == $d1))
+	then
+		insert(new DiaMateria($m3,$d1));
+		insert(new Imparte($p,$m3));
+end
+
+rule "Restos de los dias"
+	when
+		$m1: Materia(nombre == "Logica")
+    	$m2: Materia(nombre == "Programacion")
+    	$d2: Dia(dia == "Miercoles")
+    	$d3: Dia(dia == "Jueves")
+		(DiaMateria(mat == "Matematicas" && dia == "Lunes"))
+		(Despues(mat1 == $m1 && mat2 == $m2))
+	then
+		insert(new DiaMateria($m1, $d2));
+		insert(new DiaMateria($m2, $d3));
+end
+
+rule "Ultimo Profesor"
+	when
+		$p1: Profesor(prof == "Faraon")
+		$p2: Profesor(prof == "Maria")
+		$mat2: Materia("Matematicas";)
+		//Materia($mat2:nombre)
+		(NoDiaMateria(mat == $mat2 && dia == "Lunes"))
+		(Imparte(prof != $p2 && mat == $mat2))
+	then
+		insert(new Imparte($p1, $mat2));
+end
+
+rule "Solucion"
+	when
+		$imparte:Imparte()
+		$diaMateria: DiaMateria()
+	then
+		System.out.println("Lista de profesores por materia:");
+		System.out.println($imparte);
+		System.out.println("Días de las materias:");
+		System.out.println($diaMateria);
+end

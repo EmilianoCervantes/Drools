@@ -1,0 +1,111 @@
+package com.sample
+
+declare Persona
+	nombre : String @key
+end
+
+declare Tiene
+	persona : Persona @key
+	cosa : String @key
+end
+
+declare Cuarto
+	persona : Persona @key
+	numero : int @key
+end
+
+declare Cabello
+	persona : Persona @key
+	color : String @key
+end
+
+rule "carga hechos iniciales"
+	when
+	then
+		//4 personas
+		Persona per1 = new Persona("mr_holman");
+		insert(per1);
+		Persona per2 = new Persona("mr_pope");
+		insert(per2);
+		Persona per3 = new Persona("mr_woodley");
+		insert(per3);
+		Persona per4 = new Persona("sir_raymond");
+		insert(per4);
+		//Persona 1 tiene anillo
+		Tiene t = new Tiene(per1, "anillo");
+		insert(t);
+		//Persona 2 tiene reloj
+		t = new Tiene(per2, "reloj");
+		insert(t);
+		//Persona 1 tiene el cuarto 12
+		Cuarto c = new Cuarto(per1, 12);
+		insert(c);
+		//Persona 4 tiene el cuarto 10
+		c = new Cuarto(per4, 10);
+		insert(c);
+		//Persona 3 tiene el cuarto 16
+		c = new Cuarto(per3, 16);
+		insert(c);	
+end
+
+rule "tiene 2"
+	when
+		$per1 : Persona(nombre == "sir_raymond")
+		$per2 : Persona(nombre == "mr_woodley") 
+		$t : Tiene(persona == $per1 && cosa == "tijeras")
+	then
+		Tiene t = new Tiene($per2, "pinzas");
+		insert(t);
+end
+
+rule "tiene 3"
+	when
+		$per1 : Persona(nombre == "mr_woodley")
+		$per2 : Persona(nombre == "sir_raymond") 
+		$t : Tiene(persona == $per1 && cosa == "tijeras")
+	then
+		insert( new Tiene($per2, "pinzas"));
+end
+
+rule "tiene 4"
+	when
+		Cuarto($persona : persona && numero == 16 )
+	then
+		insert(new Tiene($persona, "tijeras"));
+end
+
+rule "cuarto 2"
+	when 
+		Tiene($persona : persona && cosa == "reloj")
+	then
+		insert(new Cuarto($persona, 14));
+end
+
+rule "cabello 2"
+	when
+		Cuarto($persona : persona && numero == 14)
+	then
+		insert(new Cabello($persona, "negro"));
+end
+
+rule "cabello 3"
+	when
+		Cuarto($persona : persona && numero == 12)
+	then
+		insert(new Cabello($persona, "gris"));
+end
+
+rule "cabello 4"
+	when
+		Tiene($persona : persona && cosa == "pinzas")
+	then
+		insert(new Cabello($persona, "cafe"));
+		insert(new Cabello($persona, "rojo"));
+end
+
+rule "asesino"
+	when
+		Cabello($persona : persona && color == "cafe")
+	then
+		System.out.println("El asesino es " + $persona);
+end

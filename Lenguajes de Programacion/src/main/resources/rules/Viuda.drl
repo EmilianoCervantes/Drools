@@ -1,0 +1,40 @@
+//created on: 29/08/2017
+package green
+
+declare Edad
+	anios: int @key
+end
+
+declare Tripleta
+	h1: int @key
+	h2: int @key
+	h3: int @key
+end
+
+rule "carga hechos"
+    then
+        for(int i=1; i<=36; i++)
+        	insert(new Edad(i));
+end
+
+rule "Tripletas"
+    when
+        Edad($e1:anios)
+		Edad($e2:anios)
+		Edad($e3:anios)
+		eval($e1 >= $e2 && $e2 >= $e3 && $e1*$e2*$e3 == 36)
+    then
+        insert(new Tripleta($e1, $e2, $e3));
+end
+
+rule "Mostrar"
+	when
+		$t: Tripleta()
+		$t1: Tripleta(this != $t)
+		eval($t.getH1()+$t.getH3()+$t.getH3() == $t1.getH1()+
+		$t1.getH2()+$t1.getH3())
+		//6 rechaza a 6 y se queda con la de 9
+		eval($t.getH1() > $t.getH2())
+	then
+		System.out.println($t);
+end

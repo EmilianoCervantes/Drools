@@ -1,0 +1,56 @@
+//created on: 22/08/2017
+package green
+
+//list any import classes here.
+
+
+
+//declare any global variables here
+
+declare Location
+	contenido : String
+	contenedor : String
+end
+
+
+rule "Carga hechos"
+
+    when
+        //conditions
+    then
+        insert(new Location("Office", "House"));
+        insert(new Location("Kitchen", "House"));
+        insert(new Location("Desk", "Office"));
+        insert(new Location("Chair", "Office"));
+        insert(new Location("Knife", "Kitchen"));
+        insert(new Location("Cheese", "Kitchen"));
+        insert(new Location("Computer", "Desk"));
+        insert(new Location("Draw", "Desk"));
+        insert(new Location("Key", "Draw"));
+        insert(new String("go1"));
+
+end
+
+rule "go"
+    //salience es para definir el orden
+    salience -1 
+    when
+        $s : String()
+    then
+        System.out.println($s);
+
+end
+
+rule "go1"
+	when
+		String(this == "go1")
+		isContained("Office", "House";)
+	then
+		System.out.println("office is in the house");
+end
+
+query isContained(String x, String y)
+	Location(x, y;)
+	or
+	(Location(z, y;) and isContained(x, z;))
+end

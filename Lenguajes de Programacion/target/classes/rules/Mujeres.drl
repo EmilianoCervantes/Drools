@@ -1,0 +1,93 @@
+//created on: 15/08/2017
+package com.sample
+
+//list any import classes here.
+
+
+
+//declare any global variables here
+declare Mujer
+	nombre: String @key
+end
+
+declare Trabajo
+	nombre: String @key
+end
+
+declare Cuadrupleta
+	mujer1: Mujer @key
+	trabajo1: Trabajo @key
+	mujer2: Mujer @key
+	trabajo2: Trabajo @key
+	mujer3: Mujer @key
+	trabajo3: Trabajo @key
+	mujer4: Mujer @key
+	trabajo4: Trabajo @key
+end
+
+/*Espacio de soluciones se refiere a
+ *asociar
+ *luego recorrer ese espacio de soluciones
+ *Cada uno es potencialmente posible
+ *Luego se analiza y se queda con la buena
+ *¡¡¡No es muy conveniente trabajar de esta forma!!!
+ *Se va a tardar mucho.
+*/
+rule "Espacio de soluciones"
+	when
+		//$m1 : Mujer()
+		//$m2 : Mujer($m1.nombre != nombre)
+		//$m3 : Mujer($m1.nombre != nombre && $m2.nombre != nombre)
+		//$m4 : Mujer($m1.nombre != nombre && $m2.nombre != nombre && $m3.nombre != nombre)
+		$m1 : Mujer(nombre == "Clara")
+		$m2 : Mujer(nombre == "Luisa")
+		$m3 : Mujer("María";)
+		$m4 : Mujer("Nélida";)
+		$t1 : Trabajo(nombre != "florista" && nombre != "jardinera")
+		$t2 : Trabajo($t1.nombre != nombre && nombre != "florista" && nombre != "directora")
+		$t3 : Trabajo($t1.nombre != nombre && $t2.nombre != nombre && nombre != "directora")
+		$t4 : Trabajo($t1.nombre != nombre && $t2.nombre != nombre && $t3.nombre != nombre && nombre != "jardinera" && nombre != "diseñadora")
+		eval(valida($t4.getNombre(), $t2.getNombre()))
+	then
+		System.out.println("Mujer 1 "+ $m1 + " trabaja en "+ $t1);
+		System.out.println("Mujer 2 "+ $m2 + " trabaja en "+ $t2);
+		System.out.println("Mujer 3 "+ $m3 + " trabaja en "+ $t3);
+		System.out.println("Mujer 4 "+ $m4 + " trabaja en "+ $t4);
+		System.out.println("-----------");
+end
+
+//También se pueden crear funciones en Drools
+function boolean valida(String tnelida, String tluisa) {
+	if(tnelida.equals("florista"))
+		if(tluisa.equals("diseñadora") || tluisa.equals("jardinera"))
+			return false;
+	return true;
+}
+
+rule "Carga hechos"
+
+    when
+        //conditions
+    then
+        //actions
+        Mujer m = new Mujer("Clara");
+        //Identifica a Clara como una y no la duplica.
+        insert(m);
+        insert(m);
+		insert(new Mujer("Luisa"));
+		insert(new Mujer("María"));
+		insert(new Mujer("Nélida"));
+		insert(new Trabajo("diseñadora"));
+		insert(new Trabajo("florista"));
+		insert(new Trabajo("jardinera"));
+		insert(new Trabajo("directora"));
+end
+
+rule "Second rule"
+    //include attributes such as "salience" here...
+    when
+        //conditions
+    then
+        //actions
+		
+end

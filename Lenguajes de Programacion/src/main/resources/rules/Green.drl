@@ -1,0 +1,66 @@
+//created on: 15/08/2017
+package com.sample
+
+//list any import classes here.
+
+
+
+//declare any global variables here
+declare Green
+	thing : String @key
+end
+
+declare Person
+	name : String @key
+end
+
+declare Like
+	person : Person @key
+	thing : String @key
+end
+
+rule "Load facts"
+
+	when 
+		//condiciones
+	then
+		insert(new Green("grass"));
+		insert(new Green("Hulk"));
+		Person anne = new Person("Anne");
+		insert(anne);
+		insert(new Person("John"));
+		insert(new Like(anne, "John"));
+		
+end
+
+rule "Anne likes everything which is green"
+	when
+		$anne : Person(name == "Anne")
+		$green : Green()
+	then
+		insert(new Like($anne,$green.toString()));
+end
+
+rule "John likes everything Anna likes"
+	when
+		$anne : Person(name == "Anne")
+		$john : Person(name == "John")
+		$l : Like(person == $anne)
+	then
+		insert(new Like($john, $l.getThing()));
+end
+
+rule "print likes"
+	when
+		$l : Like()
+	then
+		System.out.println($l);
+end
+
+rule "print all green facts"
+	//incluir cosas como "salience aquí
+	when
+		$g : Green()
+	then
+		System.out.println($g);
+end

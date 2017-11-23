@@ -1,0 +1,106 @@
+//created on: 18/08/2017
+package com.sample
+
+//list any import classes here.
+declare Jarro
+	capacidad: int @key
+end
+
+declare Historia
+	edo3: int @key
+	edo4: int @key
+	descrip: String @key
+	anterior: Historia @key
+	pasos: int @key
+end
+
+//declare any global variables here
+
+
+rule "Your First Rule"
+
+    when
+        //conditions
+    then
+        //actions
+        insert(new Historia(0,0,"inicio",null,0));
+end
+
+rule "Llenado del jarro 3"
+    //include attributes such as "salience" here...
+    when
+        //conditions
+        $h: Historia(edo3 < 3 && pasos < 6)
+    then
+        //actions
+        insert(new Historia(3,$h.getEdo4(),"Llenado jarro 3",$h,$h.getPasos()+1));
+end
+
+rule "Llenado del jarro 4"
+    //include attributes such as "salience" here...
+    when
+        //conditions
+        $h: Historia(edo4 < 4 && pasos < 6)
+    then
+        //actions
+        insert(new Historia($h.getEdo3(),4,"Llenado jarro 4",$h,$h.getPasos()+1));
+end
+
+rule "Vaciar el 3"
+    //include attributes such as "salience" here...
+    when
+        //conditions
+        $h: Historia(edo3 > 0 && pasos < 6)
+    then
+        //actions
+        insert(new Historia(0,$h.getEdo4(),"Vaciado jarro 3",$h,$h.getPasos()+1));
+end
+
+rule "Vaciar el 4"
+    //include attributes such as "salience" here...
+    when
+        //conditions
+        $h: Historia(edo4 > 0 && pasos < 6)
+    then
+        //actions
+        insert(new Historia($h.getEdo3(),0,"Vaciado jarro 4",$h,$h.getPasos()+1));
+end
+
+rule "Vaciar el 3 al 4"
+    //include attributes such as "salience" here...
+    when
+        //conditions
+        $h: Historia(edo3 > 0 && edo4 < 4 && pasos < 6)
+    then
+        //actions
+        int delta = (4 - $h.getEdo4()) < $h.getEdo3()? 4 - $h.getEdo4(): $h.getEdo3();
+        insert(new Historia($h.getEdo3() - delta,$h.getEdo4() + delta,"Mando "+delta+" litros del 3 al 4.",$h,$h.getPasos()+1));
+end
+
+rule "Vaciar el 4 al 3"
+    //include attributes such as "salience" here...
+    when
+        //conditions
+        $h: Historia(edo4 > 0 && edo3 < 3 && pasos < 6)
+    then
+        //actions
+        int delta = (3 - $h.getEdo3()) < $h.getEdo4()? 3 - $h.getEdo4(): $h.getEdo4();
+        insert(new Historia($h.getEdo3() + delta,$h.getEdo4() - delta,"Mando "+delta+" litros del 4 al 3.",$h,$h.getPasos()+1));
+end
+
+rule "Solucion"
+	when
+		$h: Historia(edo4 == 2)
+	then
+		System.out.println("__________");
+		System.out.println(encuentraHistoria($h));
+end
+
+function String encuentraHistoria(Historia h) {
+	StringBuilder sb = new StringBuilder();
+	while(h != null){
+		sb.insert(0," " + $h.getDescripcion());
+		h = h.getAnterior();
+	}
+	return sb.toString();
+}

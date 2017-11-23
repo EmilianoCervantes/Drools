@@ -1,0 +1,29 @@
+//created on: 29/08/2017
+package green
+
+declare Bus
+	type: String @key
+	color : String @key	
+end
+
+rule "Carga Inicial"
+    then
+        insert(new Bus("english", "red"));
+        insert(new Bus("english", "red"));
+        insert(new Bus("mexican", "red"));
+        insert(new Bus("mexican", "blue"));
+end
+
+rule "Reads"
+    when
+        exists(Bus(color == "red"))
+    then
+        System.out.println("Exists red");
+end
+
+rule "Reads 2"
+    when
+        forall($b: Bus(type == "english") Bus(this == $b && color =="red"))
+    then
+        System.out.println("Exists red");
+end

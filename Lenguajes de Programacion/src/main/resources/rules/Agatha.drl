@@ -1,0 +1,61 @@
+//created on: 1/09/2017
+package green
+
+declare Persona
+	nombre : String @key
+	genero : String @key
+end
+
+declare Solo
+	pers: Persona @key
+end
+
+declare NoJuntos
+	pers1: Persona @key
+	pers2: Persona @key
+end
+
+declare Bar
+	pers1: Persona @key
+	pers2: Persona @key
+end
+
+rule "Carga Hechos"
+    then
+        Persona alicia = new Persona("Alicia","f");
+        insert(alicia);
+        Persona esposo = new Persona("Esposo","m");
+        insert(new NoJuntos(alicia,esposo));
+        insert(new NoJuntos(esposo,alicia));
+        insert(esposo);
+        insert(new Persona("Hijo","m"));
+        insert(new Persona("Hija","f"));
+        insert(new Persona("Hermano","m"));
+end
+
+rule "posibles no juntos"
+	when
+		$pers1 : Persona(genero == "m")
+		$pers2 : Persona(genero == "f")
+	then
+		insert(new NoJuntos($pers1,$pers2));
+		insert(new NoJuntos($pers2,$pers1));
+end
+
+rule "solucion"
+    //include attributes such as "salience" here...
+    when
+        $victima : Persona()
+        $asesino : Persona(this != $victima)
+        not(NoJuntos($victima,$asesino;))
+        $per3 : Persona(this != $victima && this != $asesino)
+        $per4 : Persona(this != $victima && this != $asesino && this != $per3)
+        Bar($per3,$per4;)
+        $per5 : Persona(this != $victima && this != $asesino && this != $per3 && this != $per4)
+    then
+        System.out.println("La víctima es "+$victima);
+        System.out.println("El asesino es "+$asesino);
+        System.out.println("En el bar "+$per3);
+        System.out.println("En el bar "+$per4);
+        System.out.println("Estaba solo "+$per5);
+end
